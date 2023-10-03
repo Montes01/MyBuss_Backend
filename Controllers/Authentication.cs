@@ -21,7 +21,7 @@ namespace API.Controllers
             this.keyBytes = Encoding.ASCII.GetBytes(_config.GetSection("Jwt").GetSection("signingKey").ToString());
         }
         private readonly SqlConnection _conn = Connection.GetConnection();
-        private static string q;
+        private static string q = "";
 
         [HttpPost]
         [Route("User")]

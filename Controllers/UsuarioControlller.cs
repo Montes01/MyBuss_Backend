@@ -1,4 +1,5 @@
 ﻿using API.DAL;
+using API.Helpers;
 using API.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -6,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using System.Data.SqlClient;
 using System.IdentityModel.Tokens.Jwt;
+using System.Reflection.Metadata;
 using System.Security.Claims;
 
 namespace API.Controllers
@@ -19,8 +21,7 @@ namespace API.Controllers
         [Route("Add")]
         public IActionResult AddAnUser(UserRegister usuario)
         {
-            string q = "EXECUTE usp_agregarUsuario @DocumentoU,@fotoU,@nombreU,@apellidoU," +
-                "@edadU,@telefonoU,@contraseñaU,@correoU";
+            string q = Query.Make("usp_agregarUsuario", new string[] { "@DocumentoU", "@fotoU", "@nombreU", "@apellidoU", "@edadU", "@telefonoU", "@contraseñaU", "@correoU" });
             SqlCommand comando = new(q, _conn);
             comando.Parameters.AddWithValue("@DocumentoU", usuario.Documento);
             comando.Parameters.AddWithValue("@fotoU", usuario.Foto);
@@ -34,27 +35,15 @@ namespace API.Controllers
             try
             {
                 comando.ExecuteNonQuery();
-                return Ok(new
-                {
-                    Status = "Ok",
-                    Message = "Usuario correctamente agregado"
-                });
+                return Ok(new ResponseSender("Ok", "Usuario correctamente agregado"));
             }
             catch (SqlException ex)
             {
-                return StatusCode(400, new
-                {
-                    Status = "Denied",
-                    message = ex.Message
-                });
+                return BadRequest( new ResponseSender("Denied", ex.Message));
             }
             catch (Exception ex)
             {
-                return BadRequest(new
-                {
-                    Status = "Error",
-                    message = ex.Message
-                });
+                return BadRequest(new ResponseSender("Error", ex.Message));
             }
             finally
             {
@@ -67,12 +56,9 @@ namespace API.Controllers
         [Authorize]
         public IActionResult RemoveMyAccount()
         {
-            string tokenS = HttpContext.Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
-            var token = new JwtSecurityTokenHandler().ReadJwtToken(tokenS);
-            var RolClaim = token.Claims.FirstOrDefault(c => c.Type == "Rol");
-            if (RolClaim == null) { return BadRequest(new { Status = "Denegado", Message = "Este metodo es unicamente para eliminar usuarios no conductores" }); }
-            string? Documento = token.Claims.FirstOrDefault(C => C.Type == "Documento").Value;
-            string rol = RolClaim.Value;
+            string rol = GetRol.GetUserRol(HttpContext);
+            if (rol == null)  return BadRequest(new ResponseSender("Denied", "Este metodo es unicamente para eliminar usuarios no conductores")); 
+            string? Documento = Token.GetClaim(HttpContext, "Documento").Value;
             string query = "EXECUTE ";
             switch (rol)
             {
@@ -91,27 +77,11 @@ namespace API.Controllers
             try
             {
                 com.ExecuteNonQuery();
-                return Ok(new
-                {
-                    Status = "Ok",
-                    Message = "Usuario eliminado correctamente"
-                });
-            }
-            catch (SqlException ex)
-            {
-                return StatusCode(400, new
-                {
-                    Status = "Error",
-                    message = ex.Message
-                });
+                return Ok(new ResponseSender("Ok", "Usuario eliminado correctamente"));
             }
             catch (Exception ex)
             {
-                return BadRequest(new
-                {
-                    Status = "Error",
-                    message = ex.Message
-                });
+                return BadRequest(new ResponseSender("Error", ex.Message));
             }
             finally
             {
@@ -124,20 +94,14 @@ namespace API.Controllers
         [Authorize]
         public IActionResult UpdateAccount(UserRegister user)
         {
-            string q = "EXECUTE usp_actualizarUsuario @DocumentoU,@fotoU,@nombreU,@apellidoU,@edadU,@telefonoU,@contraseñaU,@correoU";
+            string q = Query.Make("usp_actualizarUsuario", new string[] { "@DocumentoU", "@fotoU", "@nombreU", "@apellidoU", "@edadU", "@telefonoU", "@contraseñaU", "@correoU" });
             SqlCommand com = new(q, _conn);
-            string? tokenS = HttpContext.Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
-            var token = new JwtSecurityTokenHandler().ReadJwtToken(tokenS);
-            if (token.Claims.FirstOrDefault(C => C.Type == "Rol") == null) return Unauthorized(new { Status = "Denegado", Message = "Este Endpoint es unicamente para actualizar usuarios" });
-            string Documento = token.Claims.FirstOrDefault(C => C.Type == "Documento").Value;
-            string Contraseña = token.Claims.FirstOrDefault(C => C.Type == "Contraseña").Value;
+            if (GetRol.GetUserRol(HttpContext) == null) return Unauthorized(new ResponseSender("Denegado", "Este Endpoint es unicamente para usuarios"));
+            string Documento = Token.GetClaim(HttpContext, "Documento").Value;
+            string Contraseña = Token.GetClaim(HttpContext, "Contraseña").Value;
             if (Documento != user.Documento && Contraseña != user.Contraseña)
             {
-                return Unauthorized(new
-                {
-                    Status = "Denegado",
-                    Message = "No puedes actualizar una cuenta que no sea la tuya"
-                });
+                return Unauthorized(new ResponseSender("Denied", "No puedes actualizar una cuenta que no sea la tuya"));
             }
             com.Parameters.AddWithValue("@DocumentoU", user.Documento);
             com.Parameters.AddWithValue("@fotoU", user.Foto);
@@ -151,73 +115,42 @@ namespace API.Controllers
             try
             {
                 com.ExecuteNonQuery();
-                return Ok(new
-                {
-                    Status = "Ok",
-                    Message = "Cuenta actualizada correctamente"
-                });
+                return Ok(new ResponseSender("Ok", "Cuenta actualizada correctamente"));
             }
             catch (SqlException ex)
             {
-                return BadRequest(new
-                {
-                    Status = "Error",
-                    message = ex.Message
-                });
+                return BadRequest(new ResponseSender("Error", ex.Message));
             }
             catch (Exception ex)
             {
-                return StatusCode(400, new
-                {
-                    Status = "Error",
-                    message = ex.Message
-                });
+                return BadRequest(new ResponseSender("Error", ex.Message));
             }
             finally
             {
                 _conn.Close();
             }
-
-
-
         }
-
 
         [HttpPatch]
         [Route("ChangeRol")]
         [Authorize]
         public IActionResult CambiarRolDeUsuario([FromQuery] string Documento, [FromQuery] string nuevoRol) 
         {
-            string tokenS = HttpContext.Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
-            var token = new JwtSecurityTokenHandler().ReadJwtToken(tokenS);
-            if (token.Claims.FirstOrDefault(C => C.Type == "Rol") == null) return Unauthorized(new {Status = "Denegado", Message = "Solo los usuarios pueden usar este metodo"});
-            Claim DocumentoClaim = token.Claims.FirstOrDefault(C => C.Type == "Documento");
-            string rol = DocumentoClaim.Value;
-            string q = $"EXECUITE usp_cambiarRolDeUsuario '{Documento}', '{nuevoRol}', '{rol}'";
+            string rol = GetRol.GetUserRol(HttpContext);
+            if (rol == null) return Unauthorized(new ResponseSender("Denied", "Solo los usuarios pueden usar este metodo"));
+            string q = Query.Make("usp_cambiarRolDeUsuario", new string[] { $"'{Documento}'", $"'{nuevoRol}'", $"'{rol}'" });
             SqlCommand com = new(q, _conn);
             _conn.Open();
             try
             {
                 com.ExecuteNonQuery();
-                return Ok(new
-                {
-                    Status = "Ok",
-                    Message = $"Usuario correctamente seteado como {rol}"
-                });
+                return Ok(new ResponseSender("Ok", $"Usuario seteado correctamente como {rol}"));
             } catch (SqlException ex)
             {
-                return Unauthorized(new
-                {
-                    Status = "Denegado",
-                    message = ex.Message
-                });
+                return Unauthorized(new ResponseSender("Denied", ex.Message));
             } catch (Exception ex)
             {
-                return BadRequest(new
-                {
-                    Status = "Error",
-                    message = ex.Message
-                });
+                return BadRequest(new ResponseSender("Error", ex.Message));
             } finally
             {
                 _conn.Close();

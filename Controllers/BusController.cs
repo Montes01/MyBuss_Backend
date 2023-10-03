@@ -1,4 +1,5 @@
 ﻿using API.DAL;
+using API.Helpers;
 using API.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -22,11 +23,8 @@ namespace API.Controllers
         [Authorize]
         public IActionResult AddABus([FromBody] Bus bus)
         {
-            var inToken = HttpContext.Request.Headers["Authorization"];
-            string token = inToken.ToString().Replace("Bearer ", "");
-            var handler = new JwtSecurityTokenHandler();
-            var finalTok = handler.ReadJwtToken(token);
-            string rol = finalTok.Claims.FirstOrDefault(claim => claim.Type == "Rol").Value;
+
+            string rol = GetRol.GetUserRol(HttpContext);
             if (rol != "ADMIN" && rol != "SUPERADMIN") return Unauthorized(new
             {
                 Status = "Denegado",
@@ -73,10 +71,8 @@ namespace API.Controllers
         [Authorize]
         public IActionResult DeleteABus([FromQuery] string placa)
         {
-            string token = HttpContext.Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
-            var handler = new JwtSecurityTokenHandler();
-            var finalTok = handler.ReadJwtToken(token);
-            string rol = finalTok.Claims.FirstOrDefault(cw => cw.Type == "Rol").Value;
+
+            string rol = GetRol.GetUserRol(HttpContext);
             if (rol != "ADMIN" && rol != "SUPERADMIN") return Unauthorized(new
             {
                 Status = "Denegado",
@@ -115,7 +111,7 @@ namespace API.Controllers
             if (limit < 1) return BadRequest("El limite debe ser mayor a 0");
 
             string q = $"EXECUTE usp_listarBuses {limit}, {offset}";
-            SqlDataAdapter da = new SqlDataAdapter(q, _con);
+            SqlDataAdapter da = new (q, _con);
             DataTable dt = new();
             try
             {

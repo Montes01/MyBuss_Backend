@@ -7,75 +7,75 @@ https://go.microsoft.com/fwlink/?LinkID=208121.
     <TimeStampOfAssociatedLegacyPublishXmlFile />
     <EncryptedPassword>AQAAANCMnd8BFdERjHoAwE/Cl+sBAAAASJ3yZdMQqUujQ5LVyFGm7QAAAAACAAAAAAAQZgAAAAEAACAAAACgGkjZk+MUv+4bYu3/TWtsCbSQe0ydo04RIb2Dc8K5AAAAAAAOgAAAAAIAACAAAAATbmoBAndCirzr3JfarxI5OAbad++HQ84qLiI4qMN5myAAAAAOS536Eb/6zRIDnJPjZmhBLAFbOBfQEW4ra030329v4EAAAABuT1wwYmq4PFKAMB9vHoSpIpOeaWycJSb00M7NgkBFjsxdrOopJXPV4JeIkLgit91ogIUg4iSCoAs6yMb90Pil</EncryptedPassword>
     <_PublishTargetUrl>ftp://198.37.116.29/www.MyBuss.somee.com</_PublishTargetUrl>
-    <History>True|2023-09-05T00:41:33.2657298Z;False|2023-09-04T19:31:40.2960399-05:00;True|2023-09-02T11:44:45.1505570-05:00;</History>
+    <History>False|2023-10-03T18:13:48.2829489Z;False|2023-10-03T13:10:52.4389350-05:00;False|2023-10-03T13:05:42.0750600-05:00;True|2023-09-04T19:41:33.2657298-05:00;False|2023-09-04T19:31:40.2960399-05:00;True|2023-09-02T11:44:45.1505570-05:00;</History>
     <LastFailureDetails />
   </PropertyGroup>
   <ItemGroup>
     <File Include="API.deps.json">
-      <publishTime>09/04/2023 19:40:59</publishTime>
+      <publishTime>04/09/2023 19:40:59</publishTime>
     </File>
     <File Include="API.dll">
-      <publishTime>09/04/2023 19:40:58</publishTime>
+      <publishTime>04/09/2023 19:40:58</publishTime>
     </File>
     <File Include="API.exe">
-      <publishTime>09/04/2023 19:40:58</publishTime>
+      <publishTime>04/09/2023 19:40:58</publishTime>
     </File>
     <File Include="API.pdb">
-      <publishTime>09/04/2023 19:40:58</publishTime>
+      <publishTime>04/09/2023 19:40:58</publishTime>
     </File>
     <File Include="API.runtimeconfig.json">
-      <publishTime>09/02/2023 11:44:02</publishTime>
+      <publishTime>02/09/2023 11:44:02</publishTime>
     </File>
     <File Include="appsettings.Development.json">
-      <publishTime>08/25/2023 13:56:28</publishTime>
+      <publishTime>01/01/0001 00:00:00</publishTime>
     </File>
     <File Include="appsettings.json">
-      <publishTime>08/28/2023 10:30:25</publishTime>
+      <publishTime>01/01/0001 00:00:00</publishTime>
     </File>
     <File Include="Microsoft.AspNetCore.Authentication.JwtBearer.dll">
-      <publishTime>02/24/2022 03:58:36</publishTime>
+      <publishTime>01/01/0001 00:00:00</publishTime>
     </File>
     <File Include="Microsoft.IdentityModel.Abstractions.dll">
-      <publishTime>08/25/2023 18:17:48</publishTime>
+      <publishTime>01/01/0001 00:00:00</publishTime>
     </File>
     <File Include="Microsoft.IdentityModel.JsonWebTokens.dll">
-      <publishTime>08/25/2023 17:40:12</publishTime>
+      <publishTime>01/01/0001 00:00:00</publishTime>
     </File>
     <File Include="Microsoft.IdentityModel.Logging.dll">
-      <publishTime>08/25/2023 17:46:54</publishTime>
+      <publishTime>01/01/0001 00:00:00</publishTime>
     </File>
     <File Include="Microsoft.IdentityModel.Protocols.dll">
-      <publishTime>03/30/2021 14:46:46</publishTime>
+      <publishTime>01/01/0001 00:00:00</publishTime>
     </File>
     <File Include="Microsoft.IdentityModel.Protocols.OpenIdConnect.dll">
-      <publishTime>03/30/2021 14:58:02</publishTime>
+      <publishTime>01/01/0001 00:00:00</publishTime>
     </File>
     <File Include="Microsoft.IdentityModel.Tokens.dll">
-      <publishTime>08/25/2023 18:02:24</publishTime>
+      <publishTime>01/01/0001 00:00:00</publishTime>
     </File>
     <File Include="runtimes/unix/lib/netcoreapp2.1/System.Data.SqlClient.dll">
-      <publishTime>10/17/2022 18:26:02</publishTime>
+      <publishTime>01/01/0001 00:00:00</publishTime>
     </File>
     <File Include="runtimes/win-arm64/native/sni.dll">
-      <publishTime>07/12/2017 06:24:24</publishTime>
+      <publishTime>12/07/2017 06:24:24</publishTime>
     </File>
     <File Include="runtimes/win-x64/native/sni.dll">
-      <publishTime>07/12/2017 06:24:22</publishTime>
+      <publishTime>12/07/2017 06:24:22</publishTime>
     </File>
     <File Include="runtimes/win-x86/native/sni.dll">
-      <publishTime>07/12/2017 06:24:22</publishTime>
+      <publishTime>12/07/2017 06:24:22</publishTime>
     </File>
     <File Include="runtimes/win/lib/netcoreapp2.1/System.Data.SqlClient.dll">
-      <publishTime>10/17/2022 18:26:08</publishTime>
+      <publishTime>01/01/0001 00:00:00</publishTime>
     </File>
     <File Include="System.Data.SqlClient.dll">
-      <publishTime>10/17/2022 18:16:04</publishTime>
+      <publishTime>01/01/0001 00:00:00</publishTime>
     </File>
     <File Include="System.IdentityModel.Tokens.Jwt.dll">
-      <publishTime>08/25/2023 17:37:42</publishTime>
+      <publishTime>01/01/0001 00:00:00</publishTime>
     </File>
     <File Include="web.config">
-      <publishTime>09/04/2023 19:40:59</publishTime>
+      <publishTime>04/09/2023 19:40:59</publishTime>
     </File>
   </ItemGroup>
 </Project>

@@ -1,4 +1,5 @@
 ﻿using API.DAL;
+using API.Helpers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -14,14 +15,16 @@ namespace API.Controllers
     public class InteraccionController : ControllerBase
     {
         private readonly static SqlConnection _conn = Connection.GetConnection();
+
         [HttpPost]
         [Route("Add")]
+        [Authorize]
         public IActionResult AddInteraction(InteraccionRegister input)
         {
             string tokenS = HttpContext.Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
             var token = new JwtSecurityTokenHandler().ReadJwtToken(tokenS);
             Claim? CDocumento = token.Claims.FirstOrDefault(c => c.Type == "Documento");
-            if (CDocumento == null) return Unauthorized(new { Status = "Denegado", Message = "Solo los usuarios tienen acceso a esta accion" });
+            if (CDocumento == null) return Unauthorized(new ResponseSender("Denegado", "Solo los usuarios tienen acceso a esta accion" ));
             string Documento = CDocumento.Value;
             string q = "EXECUTE usp_agregarInteraccion @fkNumeroR,@fkDocumentoU,@meGusta,@comentario,@horarioSuceso";
             SqlCommand com = new(q, _conn);
@@ -34,27 +37,15 @@ namespace API.Controllers
             try
             {
                 com.ExecuteNonQuery();
-                return Ok(new
-                {
-                    Status = "Ok",
-                    Message = "La interaccion fue agregada correctamente"
-                });
+                return Ok(new ResponseSender("Ok", "La interaccion fue agregada correctamente"));
             }
             catch (SqlException ex)
             {
-                return Unauthorized(new
-                {
-                    Status = "Error",
-                    messsage = ex.Message
-                });
+                return Unauthorized(new ResponseSender("Error", ex.Message));
             }
             catch (Exception ex)
             {
-                return BadRequest(new
-                {
-                    Status = "Error",
-                    message = ex.Message
-                });
+                return BadRequest(new ResponseSender("Error", ex.Message));
             }
             finally
             {
@@ -64,6 +55,7 @@ namespace API.Controllers
 
         [HttpPatch]
         [Route("Like")]
+        [Authorize]
         public IActionResult AddJustALike([FromQuery] int NumeroR)
         { 
             string tokenS = HttpContext.Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
@@ -77,25 +69,13 @@ namespace API.Controllers
             try
             {
                 com.ExecuteNonQuery();
-                return Ok(new
-                {
-                    Status = "Ok",
-                    Message = "Like agregado correctamente"
-                });
+                return Ok(new ResponseSender("Ok", "Like agregado correctamente"));
             } catch (SqlException ex)
             {
-                return Unauthorized(new
-                {
-                    Status = "Error",
-                    message = ex.Message
-                });
+                return Unauthorized(new ResponseSender("Error", ex.Message));
             } catch (Exception ex)
             {
-                return BadRequest(new
-                {
-                    Status = "Error",
-                    message = ex.Message
-                });
+                return BadRequest(new ResponseSender("Error", ex.Message));
             } finally
             {
                 _conn.Close();
@@ -108,6 +88,7 @@ namespace API.Controllers
         }
 
         [HttpDelete]
+        [Authorize]
         [Route("RemoveLike")]
         public IActionResult RemoveALike([FromQuery] int NumeroR)
         {
@@ -121,25 +102,13 @@ namespace API.Controllers
             try
             {
                 com.ExecuteNonQuery();
-                return Ok(new
-                {
-                    Status = "Ok",
-                    Message = "Me gusta eliminado correctamente"
-                });
+                return Ok(new ResponseSender("Ok", "Me gusta eliminado correctamente"));
             } catch (SqlException ex)
             {
-                return Unauthorized(new
-                {
-                    Status = "Error",
-                    message = ex.Message
-                });
+                return Unauthorized(new ResponseSender("Error", ex.Message));
             } catch (Exception ex)
             {
-                return BadRequest(new
-                {
-                    Status = "Error",
-                    message = ex.Message
-                });
+                return BadRequest(new ResponseSender("Error", ex.Message));
             } finally
             {
                 _conn.Close();
@@ -148,6 +117,7 @@ namespace API.Controllers
 
         [HttpDelete]
         [Route("RemoveComment")]
+        [Authorize]
         public IActionResult RemoveAComment([FromQuery] int NumeroR)
         {
             string tokenS = HttpContext.Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
@@ -160,27 +130,15 @@ namespace API.Controllers
             try
             {
                 com.ExecuteNonQuery();
-                return Ok(new
-                {
-                    Status = "Ok",
-                    Message = "Comentario eliminado correctamente"
-                });
+                return Ok(new ResponseSender("Ok", "Comentario eliminado correctamente"));
             }
             catch (SqlException ex)
             {
-                return Unauthorized(new
-                {
-                    Status = "Error",
-                    message = ex.Message
-                });
+                return Unauthorized(new ResponseSender("Error", ex.Message));
             }
             catch (Exception ex)
             {
-                return BadRequest(new
-                {
-                    Status = "Error",
-                    message = ex.Message
-                });
+                return BadRequest(new ResponseSender("Error", ex.Message));
             }
             finally
             {
@@ -203,27 +161,15 @@ namespace API.Controllers
             try
             {
                 com.ExecuteNonQuery();
-                return Ok(new
-                {
-                    Status = "Ok",
-                    Message = "Comentario actualizado correctamente"
-                });
+                return Ok(new ResponseSender("Ok", "Comentario actualizado correctamente"));
             }
             catch (SqlException ex)
             {
-                return Unauthorized(new
-                {
-                    Status = "Error",
-                    message = ex.Message
-                });
+                return Unauthorized(new ResponseSender("Error", ex.Message));
             }
             catch (Exception ex)
             {
-                return BadRequest(new
-                {
-                    Status = "Error",
-                    message = ex.Message
-                });
+                return BadRequest(new ResponseSender("Denied", ex.Message));
             }
             finally
             {
@@ -246,27 +192,15 @@ namespace API.Controllers
             try
             {
                 com.ExecuteNonQuery();
-                return Ok(new
-                {
-                    Status = "Ok",
-                    Message = "Comentario agregado correctamente"
-                });
+                return Ok(new ResponseSender("Ok", "Comentario agregado correctamente"));
             }
             catch (SqlException ex)
             {
-                return Unauthorized(new
-                {
-                    Status = "Error",
-                    message = ex.Message
-                });
+                return Unauthorized(new ResponseSender("Denied", ex.Message));
             }
             catch (Exception ex)
             {
-                return BadRequest(new
-                {
-                    Status = "Error",
-                    message = ex.Message
-                });
+                return BadRequest(new ResponseSender("Error", ex.Message));
             }
             finally
             {
