@@ -21,11 +21,9 @@ namespace API.Controllers
         [Authorize]
         public IActionResult AddInteraction(InteraccionRegister input)
         {
-            string tokenS = HttpContext.Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
-            var token = new JwtSecurityTokenHandler().ReadJwtToken(tokenS);
-            Claim? CDocumento = token.Claims.FirstOrDefault(c => c.Type == "Documento");
-            if (CDocumento == null) return Unauthorized(new ResponseSender("Denegado", "Solo los usuarios tienen acceso a esta accion" ));
-            string Documento = CDocumento.Value;
+
+            string Documento = Token.GetClaim(HttpContext, "Documento").Value;
+            if (Documento == null) return Unauthorized(new ResponseSender("Denegado", "Solo los usuarios tienen acceso a esta accion"));
             string q = "EXECUTE usp_agregarInteraccion @fkNumeroR,@fkDocumentoU,@meGusta,@comentario,@horarioSuceso";
             SqlCommand com = new(q, _conn);
             com.Parameters.AddWithValue("@fkNumeroR", input.FkNumeroR);
@@ -57,12 +55,9 @@ namespace API.Controllers
         [Route("Like")]
         [Authorize]
         public IActionResult AddJustALike([FromQuery] int NumeroR)
-        { 
-            string tokenS = HttpContext.Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
-            var token = new JwtSecurityTokenHandler().ReadJwtToken(tokenS);
-            Claim? CDocumento = token.Claims.FirstOrDefault(C => C.Type == "Documento");
-            if (CDocumento == null) return Unauthorized(new { Status = "Denegado", Message = "Solo los usuarios pueden acceder a este punto" });
-            string Documento = CDocumento.Value;
+        {
+            string Documento = Token.GetClaim(HttpContext, "Documento").Value;
+            if (Documento == null) return Unauthorized(new ResponseSender("Denegado", "Solo los usuarios tienen acceso a esta accion"));
             string q = $"EXECUTE usp_agregarMeGusta {NumeroR}, '{Documento}'";
             SqlCommand com = new(q, _conn);
             _conn.Open();
@@ -70,21 +65,19 @@ namespace API.Controllers
             {
                 com.ExecuteNonQuery();
                 return Ok(new ResponseSender("Ok", "Like agregado correctamente"));
-            } catch (SqlException ex)
+            }
+            catch (SqlException ex)
             {
                 return Unauthorized(new ResponseSender("Error", ex.Message));
-            } catch (Exception ex)
+            }
+            catch (Exception ex)
             {
                 return BadRequest(new ResponseSender("Error", ex.Message));
-            } finally
+            }
+            finally
             {
                 _conn.Close();
             }
-
-
-
-
-
         }
 
         [HttpDelete]
@@ -92,24 +85,24 @@ namespace API.Controllers
         [Route("RemoveLike")]
         public IActionResult RemoveALike([FromQuery] int NumeroR)
         {
-            string tokenS = HttpContext.Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
-            var token = new JwtSecurityTokenHandler().ReadJwtToken(tokenS);
-            Claim? CDocumento = token.Claims.FirstOrDefault(C => C.Type == "Documento");
-            if (CDocumento == null) return Unauthorized(new { Status = "Denegado", Message = "Solo los usuarios pueden acceder a este punto" });
-            string Documento = CDocumento.Value;
+            string Documento = Token.GetClaim(HttpContext, "Documento").Value;
+            if (Documento == null) return Unauthorized(new ResponseSender("Denegado", "Solo los usuarios tienen acceso a esta accion"));
             string q = $"EXECUTE usp_eliminarmeGusta {NumeroR}, '{Documento}'";
             SqlCommand com = new(q, _conn);
             try
             {
                 com.ExecuteNonQuery();
                 return Ok(new ResponseSender("Ok", "Me gusta eliminado correctamente"));
-            } catch (SqlException ex)
+            }
+            catch (SqlException ex)
             {
                 return Unauthorized(new ResponseSender("Error", ex.Message));
-            } catch (Exception ex)
+            }
+            catch (Exception ex)
             {
                 return BadRequest(new ResponseSender("Error", ex.Message));
-            } finally
+            }
+            finally
             {
                 _conn.Close();
             }
@@ -120,11 +113,8 @@ namespace API.Controllers
         [Authorize]
         public IActionResult RemoveAComment([FromQuery] int NumeroR)
         {
-            string tokenS = HttpContext.Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
-            var token = new JwtSecurityTokenHandler().ReadJwtToken(tokenS);
-            Claim? CDocumento = token.Claims.FirstOrDefault(C => C.Type == "Documento");
-            if (CDocumento == null) return Unauthorized(new { Status = "Denegado", Message = "Solo los usuarios pueden acceder a este punto" });
-            string Documento = CDocumento.Value;
+            string Documento = Token.GetClaim(HttpContext, "Documento").Value;
+            if (Documento == null) return Unauthorized(new ResponseSender("Denegado", "Solo los usuarios tienen acceso a esta accion"));
             string q = $"EXECUTE usp_eliminarmeGusta {NumeroR}, '{Documento}'";
             SqlCommand com = new(q, _conn);
             try
@@ -151,11 +141,8 @@ namespace API.Controllers
         [Route("UpdateComment")]
         public IActionResult UpdateAComment([FromBody] UpdateComment data)
         {
-            string tokenS = HttpContext.Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
-            var token = new JwtSecurityTokenHandler().ReadJwtToken(tokenS);
-            Claim? CDocumento = token.Claims.FirstOrDefault(C => C.Type == "Documento");
-            if (CDocumento == null) return Unauthorized(new { Status = "Denegado", Message = "Solo los usuarios pueden acceder a este punto" });
-            string Documento = CDocumento.Value;
+            string Documento = Token.GetClaim(HttpContext, "Documento").Value;
+            if (Documento == null) return Unauthorized(new ResponseSender("Denegado", "Solo los usuarios tienen acceso a esta accion"));
             string q = $"EXECUTE usp_actualizarComentario {data.NumeroR}, '{Documento}', '{data.Comentario}', '{data.HorarioSuceso}'";
             SqlCommand com = new(q, _conn);
             try
@@ -176,16 +163,13 @@ namespace API.Controllers
                 _conn.Close();
             }
         }
-        
+
         [HttpPatch]
         [Route("Comment")]
         public IActionResult AddJustAComment([FromQuery] UpdateComment data)
         {
-            string tokenS = HttpContext.Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
-            var token = new JwtSecurityTokenHandler().ReadJwtToken(tokenS);
-            Claim? CDocumento = token.Claims.FirstOrDefault(C => C.Type == "Documento");
-            if (CDocumento == null) return Unauthorized(new { Status = "Denegado", Message = "Solo los usuarios pueden acceder a este punto" });
-            string Documento = CDocumento.Value;
+            string Documento = Token.GetClaim(HttpContext, "Documento").Value;
+            if (Documento == null) return Unauthorized(new ResponseSender("Denegado", "Solo los usuarios tienen acceso a esta accion"));
             string q = $"EXECUTE usp_agregarMeGusta {data.NumeroR}, '{Documento}', '{data.Comentario}', '{data.HorarioSuceso}'";
             SqlCommand com = new(q, _conn);
             _conn.Open();
@@ -212,10 +196,10 @@ namespace API.Controllers
 
     public class UpdateComment
     {
-    public int NumeroR { get; set; }
-    public string? Comentario { get; set; }
-    public string? HorarioSuceso { get; set; }
-}
+        public int NumeroR { get; set; }
+        public string? Comentario { get; set; }
+        public string? HorarioSuceso { get; set; }
+    }
 
     public class InteraccionRegister
     {
@@ -224,5 +208,5 @@ namespace API.Controllers
         public bool MeGusta { get; set; }
         public string? Comentario { get; set; }
         public string? HorarioSuceso { get; set; }
-    }   
+    }
 }

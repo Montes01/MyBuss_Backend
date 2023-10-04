@@ -11,5 +11,11 @@ namespace API.Helpers
             var token = new JwtSecurityTokenHandler().ReadJwtToken(tokenS);
             return token.Claims.FirstOrDefault(C => C.Type == Type);
         }
+        public static string GetUserRol(HttpContext context)
+        {
+            var tokenS = context.Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
+            var token = new JwtSecurityTokenHandler().ReadJwtToken(tokenS);
+            return token.Claims.FirstOrDefault(C => C.Type == "Rol").Value.ToString();
+        }
     }
 }

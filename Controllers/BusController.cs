@@ -24,7 +24,7 @@ namespace API.Controllers
         public IActionResult AddABus([FromBody] Bus bus)
         {
 
-            string rol = GetRol.GetUserRol(HttpContext);
+            string rol = Token.GetUserRol(HttpContext);
             if (rol != "ADMIN" && rol != "SUPERADMIN") return Unauthorized(new
             {
                 Status = "Denegado",
@@ -72,7 +72,7 @@ namespace API.Controllers
         public IActionResult DeleteABus([FromQuery] string placa)
         {
 
-            string rol = GetRol.GetUserRol(HttpContext);
+            string rol = Token.GetUserRol(HttpContext);
             if (rol != "ADMIN" && rol != "SUPERADMIN") return Unauthorized(new
             {
                 Status = "Denegado",
@@ -111,7 +111,7 @@ namespace API.Controllers
             if (limit < 1) return BadRequest("El limite debe ser mayor a 0");
 
             string q = $"EXECUTE usp_listarBuses {limit}, {offset}";
-            SqlDataAdapter da = new (q, _con);
+            SqlDataAdapter da = new(q, _con);
             DataTable dt = new();
             try
             {
@@ -145,11 +145,7 @@ namespace API.Controllers
                     );
             }
 
-            return Ok(new
-            {
-                Status = "Ok",
-                Response = buses
-            });
+            return Ok(new ResponseSender(StatusMessages.OK, buses));
 
         }
 
@@ -164,7 +160,8 @@ namespace API.Controllers
             try
             {
                 da.Fill(dt);
-            } catch (Exception ex)
+            }
+            catch (Exception ex)
             {
                 return BadRequest(new
                 {

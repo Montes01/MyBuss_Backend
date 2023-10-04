@@ -26,7 +26,7 @@ namespace API.Controllers
         public IActionResult AddRute([FromBody] Ruta ruta)
         {
 
-            string rol = GetRol.GetUserRol(HttpContext);
+            string rol = Token.GetUserRol(HttpContext);
             if (!(rol == "ADMIN" || rol == "SUPERADMIN")) return Unauthorized(new ResponseSender("Denied", "No estas autorizado a agregar una ruta"));
             string q = "EXEC usp_añadirRuta @NumeroR, @inicioR, @finR";
             var com = new SqlCommand(q, _conn);
@@ -56,7 +56,7 @@ namespace API.Controllers
         public IActionResult DeleteRute([FromQuery] int NumeroR)
         {
 
-            string rol = GetRol.GetUserRol(HttpContext);
+            string rol = Token.GetUserRol(HttpContext);
             if (!(rol == "ADMIN" || rol == "SUPERADMIN")) return Unauthorized(new ResponseSender("Denied", $"No estas autorizado a eliminar una ruta"));
             string q = $"EXECUTE usp_eliminarRuta {NumeroR}";
             SqlCommand com = new(q, _conn);
@@ -82,7 +82,7 @@ namespace API.Controllers
         public IActionResult UpdateRuteStatus([FromQuery] int NumeroR)
         {
 
-            string rol = GetRol.GetUserRol(HttpContext);
+            string rol = Token.GetUserRol(HttpContext);
             if (rol != "ADMIN" || rol != "SUPERADMIN")
             {
                 return Unauthorized(new ResponseSender("Denied", "Solo los usuarios con rol de ADMIN o SUPERADMIN pueden actualizar el estado de una ruta"));
@@ -112,7 +112,7 @@ namespace API.Controllers
         public IActionResult UpdateRuteWay([FromQuery] int NumeroR, [FromBody] ChangeRute rute)
         {
 
-            string rol = GetRol.GetUserRol(HttpContext);
+            string rol = Token.GetUserRol(HttpContext);
             if (!(rol == "ADMIN" || rol == "SUPERADMIN"))
                 return Unauthorized(new ResponseSender("Denied", "Solo los usuarios con rol de ADMIN o SUPERADMIN pueden modificar el recorrido de una ruta"));
             

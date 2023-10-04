@@ -8,6 +8,7 @@ using System.Text;
 using System.Data.SqlClient;
 using API.DAL;
 using System.Data;
+using API.Helpers;
 
 namespace API.Controllers
 {
@@ -30,14 +31,23 @@ namespace API.Controllers
             q = $"EXECUTE usp_iniciarSesion '{request.Documento}', '{request.contraseña}'";
             SqlDataAdapter da = new(q, _conn);
             var dt = new DataTable();
-            da.Fill(dt);
             Usuario usuario = new();
-            if (dt.Rows.Count == 1)
+            try
             {
+                da.Fill(dt);
                 FillUser(usuario, dt);
-                var claims = new ClaimsIdentity();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new ResponseSender(StatusMessages.ERROR, ex.Message));
+            }
 
-                Claim[] claim = new Claim[] {
+            if (dt.Rows.Count < 1)
+                return Unauthorized(new ResponseSender(StatusMessages.DENIED, "Usuario no encontrado"));
+
+            var claims = new ClaimsIdentity();
+
+            Claim[] claim = new Claim[] {
                 new Claim("Foto", usuario.Foto),
                 new Claim("Nombre", usuario.Nombre),
                 new Claim("Apellido", usuario.Apellido),
@@ -48,26 +58,21 @@ namespace API.Controllers
                 new Claim("Documento", usuario.Documento),
                 new Claim("Rol", usuario.Rol)
                 };
-                claims.AddClaims(claim);
-                var tokenDescriptor = new SecurityTokenDescriptor
-                {
-                    Subject = claims,
-                    Expires = DateTime.UtcNow.AddHours(10),
-                    SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(keyBytes), SecurityAlgorithms.HmacSha256Signature)
-                };
+            claims.AddClaims(claim);
+            var tokenDescriptor = new SecurityTokenDescriptor
+            {
+                Subject = claims,
+                Expires = DateTime.UtcNow.AddHours(10),
+                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(keyBytes), SecurityAlgorithms.HmacSha256Signature)
+            };
 
-                var tokenHandler = new JwtSecurityTokenHandler();
-                var tokenConfig = tokenHandler.CreateToken(tokenDescriptor);
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var tokenConfig = tokenHandler.CreateToken(tokenDescriptor);
 
-                string token = tokenHandler.WriteToken(tokenConfig);
+            string token = tokenHandler.WriteToken(tokenConfig);
 
-                return Ok(new
-                {
-                    Token = token,
-                    Status = "Ok"
-                });
-            }
-            return Unauthorized("Usuario no encontrado");
+            return Ok(new ResponseSender(StatusMessages.OK, token));
+
         }
 
 
@@ -82,16 +87,16 @@ namespace API.Controllers
             try
             {
                 da.Fill(dt);
-                FillDriver(conductor, dt);
             }
-            catch (SqlException ex)
+            catch (Exception ex)
             {
-                return BadRequest(new
-                {
-                    Status = "Error",
-                    message = ex.Message
-                });
+                return BadRequest(new ResponseSender(StatusMessages.ERROR, ex.Message));
             }
+
+            if (dt.Rows.Count < 1) 
+                return Unauthorized(new ResponseSender(StatusMessages.DENIED, "Conductor no encontrado"));
+                FillDriver(conductor, dt);
+
             var claimIde = new ClaimsIdentity();
             Claim[] claims = new Claim[]
             {
@@ -121,11 +126,7 @@ namespace API.Controllers
             var handler = new JwtSecurityTokenHandler();
             var tokenC = handler.CreateToken(descriptor);
             var token = handler.WriteToken(tokenC);
-            return Ok(new
-            {
-                Status = "Ok",
-                Response = token
-            });
+            return Ok(new ResponseSender(StatusMessages.OK, token));
         }
 
 
