@@ -25,9 +25,9 @@ namespace API.Controllers
         [Route("Agregar")]
         public IActionResult AddRute([FromBody] Ruta ruta)
         {
-
             string rol = Token.GetUserRol(HttpContext);
-            if (!(rol == "ADMIN" || rol == "SUPERADMIN")) return Unauthorized(new ResponseSender("Denied", "No estas autorizado a agregar una ruta"));
+            if (!(rol == "ADMIN" || rol == "SUPERADMIN")) 
+                return Unauthorized(new ResponseSender(StatusMessages.DENIED, "No estas autorizado a agregar una ruta"));
             string q = "EXEC usp_añadirRuta @NumeroR, @inicioR, @finR";
             var com = new SqlCommand(q, _conn);
             com.Parameters.AddWithValue("@NumeroR", ruta.NumeroR);
@@ -40,14 +40,14 @@ namespace API.Controllers
             }
             catch (Exception ex)
             {
-                return BadRequest(new ResponseSender("Error",ex.Message));
+                return BadRequest(new ResponseSender(StatusMessages.ERROR,ex.Message));
             }
             finally
             {
                 _conn.Close();
             }
 
-            return Ok(new ResponseSender("Ok", "Ruta agregada correctamente"));
+            return Ok(new ResponseSender(StatusMessages.OK, "Ruta agregada correctamente"));
         }
 
         [HttpDelete]
@@ -57,19 +57,19 @@ namespace API.Controllers
         {
 
             string rol = Token.GetUserRol(HttpContext);
-            if (!(rol == "ADMIN" || rol == "SUPERADMIN")) return Unauthorized(new ResponseSender("Denied", $"No estas autorizado a eliminar una ruta"));
+            if (!(rol == "ADMIN" || rol == "SUPERADMIN")) return Unauthorized(new ResponseSender(StatusMessages.DENIED, $"No estas autorizado a eliminar una ruta"));
             string q = $"EXECUTE usp_eliminarRuta {NumeroR}";
             SqlCommand com = new(q, _conn);
             _conn.Open();
             try
             {
                 com.ExecuteNonQuery();
-                return Ok(new ResponseSender("Ok", "Ruta eliminada correctamente, todos los buses que tenian esta ruta, pasaron a tener una ruta 0"));
+                return Ok(new ResponseSender(StatusMessages.OK, "Ruta eliminada correctamente, todos los buses que tenian esta ruta, pasaron a tener una ruta 0"));
             }
-            catch (SqlException ex)
+            catch (Exception ex)
             {
-                return BadRequest(new ResponseSender("Error", ex.Message));
-            }
+                return BadRequest(new ResponseSender(StatusMessages.ERROR, ex.Message));
+            } 
             finally
             {
                 _conn.Close();
@@ -85,7 +85,7 @@ namespace API.Controllers
             string rol = Token.GetUserRol(HttpContext);
             if (rol != "ADMIN" || rol != "SUPERADMIN")
             {
-                return Unauthorized(new ResponseSender("Denied", "Solo los usuarios con rol de ADMIN o SUPERADMIN pueden actualizar el estado de una ruta"));
+                return Unauthorized(new ResponseSender(StatusMessages.DENIED, "Solo los usuarios con rol de ADMIN o SUPERADMIN pueden actualizar el estado de una ruta"));
             }
             string q = $"EXECUTE usp_cambiarEstadoRuta {NumeroR}";
             SqlCommand com = new(q, _conn);
@@ -93,11 +93,11 @@ namespace API.Controllers
             try
             {
                 com.ExecuteNonQuery();
-                return Ok(new ResponseSender("Ok", "Ruta Activada/Desactivada correctamente"));
+                return Ok(new ResponseSender(StatusMessages.OK, "Ruta Activada/Desactivada correctamente"));
             }
             catch (SqlException ex)
             {
-                return BadRequest(new ResponseSender("Error", ex.Message));
+                return BadRequest(new ResponseSender(StatusMessages.ERROR, ex.Message));
             }
             finally
             {
@@ -114,7 +114,7 @@ namespace API.Controllers
 
             string rol = Token.GetUserRol(HttpContext);
             if (!(rol == "ADMIN" || rol == "SUPERADMIN"))
-                return Unauthorized(new ResponseSender("Denied", "Solo los usuarios con rol de ADMIN o SUPERADMIN pueden modificar el recorrido de una ruta"));
+                return Unauthorized(new ResponseSender(StatusMessages.DENIED, "Solo los usuarios con rol de ADMIN o SUPERADMIN pueden modificar el recorrido de una ruta"));
             
             string q = "EXECUTE usp_actualizarRecorridoRuta @numeroR, @inicio, @fin";
             SqlCommand com = new(q, _conn);
@@ -125,11 +125,11 @@ namespace API.Controllers
             try
             {
                 com.ExecuteNonQuery();
-                return Ok(new ResponseSender("Ok", "Recorrido de la ruta cambiados correctamente"));
+                return Ok(new ResponseSender(StatusMessages.OK, "Recorrido de la ruta cambiados correctamente"));
             }
             catch (SqlException ex)
             {
-                return BadRequest(new ResponseSender("Error", ex.Message));
+                return BadRequest(new ResponseSender(StatusMessages.ERROR, ex.Message));
             }
             finally
             {
@@ -166,7 +166,7 @@ namespace API.Controllers
             }
             catch (Exception ex)
             {
-                return BadRequest(new ResponseSender("Error", ex.Message));
+                return BadRequest(new ResponseSender(StatusMessages.ERROR, ex.Message));
             }
             finally
             {

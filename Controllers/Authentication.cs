@@ -12,7 +12,7 @@ using API.Helpers;
 
 namespace API.Controllers
 {
-    [Route("Auth")]
+    [Route("Autorizar")]
     [ApiController]
     public class Authentication : ControllerBase
     {
@@ -25,7 +25,7 @@ namespace API.Controllers
         private static string q = "";
 
         [HttpPost]
-        [Route("User")]
+        [Route("Usuario")]
         public IActionResult Validar([FromBody] InicioSesion request)
         {
             q = $"EXECUTE usp_iniciarSesion '{request.Documento}', '{request.contraseña}'";
@@ -77,7 +77,7 @@ namespace API.Controllers
 
 
         [HttpPost]
-        [Route("Driver")]
+        [Route("Conductor")]
         public IActionResult GetDriverToken([FromBody] InicioSesion request)
         {
             string q = $"EXECUTE usp_iniciarSesionConductor '{request.Documento}', '{request.contraseña}'";

@@ -1,4 +1,5 @@
 ﻿using API.DAL;
+using API.Helpers;
 using API.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
@@ -40,27 +41,17 @@ namespace API.Controllers
             try
             {
                 comando.ExecuteNonQuery();
-                return Ok(new
-                {
-                    Status = "Ok",
-                    Message = "Usuario registrado correctamente"
-                });
+                return Ok(new ResponseSender(StatusMessages.OK, "Usuario registrado correctamente"));
             }
             catch (SqlException ex)
             {
-                return Unauthorized(new
-                {
-                    Status = "Denegado",
-                    message = ex.Message
-                });
-            } catch (Exception ex)
+                return Unauthorized(new ResponseSender(StatusMessages.DENIED, ex.Message));
+            }
+            catch (Exception ex)
             {
-                return BadRequest(new
-                {
-                    Status = "Error",
-                    message = ex.Message
-                });
-            } finally
+                return BadRequest(new ResponseSender(StatusMessages.ERROR, ex.Message));
+            }
+            finally
             {
                 _conn.Close();
             }
@@ -71,19 +62,11 @@ namespace API.Controllers
         [Authorize]
         public IActionResult DeleteADriver([FromQuery] string cedula)
         {
-            string token = HttpContext.Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
-            var handler = new JwtSecurityTokenHandler();
-            var finalTok = handler.ReadJwtToken(token);
-            var Claim = finalTok.Claims.FirstOrDefault(c => c.Type == "Rol");
-            if (Claim == null) return Unauthorized(new { Status = "Denegado", Message = "No eres un usuario, no puedes acceder a este punto" });
-            string rol = Claim.Value;
-            bool isNotAdmin = !(rol == "ADMIN" || rol == "SUPERADMIN");
-            if (isNotAdmin)
-                return Unauthorized(new
-                {
-                    Status = "Denegado",
-                    Message = "Solo usuarios que sean ADMIN o SUPERADMIN pueden eliminar cuentas de conductores"
-                });
+            string rol = Token.GetUserRol(HttpContext);
+            if (rol == null) 
+                return Unauthorized(new ResponseSender(StatusMessages.DENIED, "No eres un usuario, no puedes acceder a este punto"));
+            if (!(rol == "ADMIN" || rol == "SUPERADMIN"))
+                return Unauthorized(new ResponseSender(StatusMessages.DENIED, "Solo usuarios que sean ADMIN o SUPERADMIN pueden eliminar cuentas de conductores"));
 
             string q = $"EXECUTE usp_eliminarConductor '{cedula}'";
             SqlCommand com = new(q, _conn);
@@ -91,20 +74,12 @@ namespace API.Controllers
             try
             {
                 com.ExecuteNonQuery();
-                return Ok(new
-                {
-                    Status = "Ok",
-                    Message = "Conductor eliminado correctamente"
-                });
+                return Ok(new ResponseSender(StatusMessages.OK, "Conductor eliminado correctamente"));
 
             }
             catch (SqlException ex)
             {
-                return BadRequest(new
-                {
-                    Status = "Error",
-                    message = ex.Message
-                });
+                return BadRequest(new ResponseSender(StatusMessages.ERROR, ex.Message));
             }
             finally
             {
@@ -135,27 +110,15 @@ namespace API.Controllers
             try
             {
                 comando.ExecuteNonQuery();
-                return Ok(new
-                {
-                    Status = "Ok",
-                    Message = "Conductor actualizado correctamente"
-                });
+                return Ok(new ResponseSender(StatusMessages.OK, "Conductor actualizado correctamente"));
             }
             catch (SqlException ex)
             {
-                return StatusCode(400, new
-                {
-                    Status = "Error",
-                    message = ex.Message
-                });
+                return BadRequest(new ResponseSender(StatusMessages.DENIED, ex.Message));
             }
             catch (Exception ex)
             {
-                return BadRequest(new
-                {
-                    Status = "Error",
-                    message = ex.Message
-                });
+                return BadRequest(new ResponseSender(StatusMessages.ERROR, ex.Message));
             }
             finally
             {
@@ -168,36 +131,24 @@ namespace API.Controllers
         [Route("Activar")]
         public IActionResult ActiveDriver([FromQuery] string cedula)
         {
-            string tokenS = HttpContext.Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
-
-            var token = new JwtSecurityTokenHandler().ReadJwtToken(tokenS);
-            var RolClaim = token.Claims.FirstOrDefault(c => c.Type == "Rol");
-            if (RolClaim == null)
-                return Unauthorized(new { Status = "Denegado", Message = "No eres un usuario, no puedes acceder a este punto" });
-            string rol = RolClaim.Value;
+            string rol = Token.GetUserRol(HttpContext);
+            if (rol == null)
+                return Unauthorized(new ResponseSender(StatusMessages.DENIED, "No eres un usuario, no puedes acceder a este punto"));
 
 
-            bool isNotAdmin = !(rol == "ADMIN" || rol == "SUPERADMIN");
-            if (isNotAdmin) return Unauthorized(new { Status = "Denegado", Message = "Solo los usuarios con rol de ADMIN o SUPERADMIN pueden aceptar una cuenta de un conductor" });
+            if (!(rol == "ADMIN" || rol == "SUPERADMIN"))
+                return Unauthorized(new ResponseSender(StatusMessages.DENIED, "Solo los usuarios con rol de ADMIN o SUPERADMIN pueden aceptar una cuenta de un conductor"));
             string q = $"EXECUTE usp_activarConductor '{cedula}'";
             SqlCommand com = new(q, _conn);
             _conn.Open();
             try
             {
                 com.ExecuteNonQuery();
-                return Ok(new
-                {
-                    Status = "Ok",
-                    Message = "Conductor aceptado correctamente"
-                });
+                return Ok(new ResponseSender(StatusMessages.OK, "Conductor aceptado correctamente"));
             }
             catch (SqlException ex)
             {
-                return BadRequest(new
-                {
-                    Status = "Ok",
-                    message = ex.Message
-                });
+                return BadRequest(new ResponseSender(StatusMessages.DENIED, ex.Message));
             }
             finally
             {

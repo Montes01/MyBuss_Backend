@@ -12,13 +12,13 @@ using System.Security.Claims;
 
 namespace API.Controllers
 {
-    [Route("User")]
+    [Route("Usuario")]
     [ApiController]
     public class UsuarioControlller : ControllerBase
     {
         private static readonly SqlConnection _conn = Connection.GetConnection();
         [HttpPost]
-        [Route("Add")]
+        [Route("Agregar")]
         public IActionResult AddAnUser(UserRegister usuario)
         {
             string q = Query.Make("usp_agregarUsuario", new string[] { "@DocumentoU", "@fotoU", "@nombreU", "@apellidoU", "@edadU", "@telefonoU", "@contraseñaU", "@correoU" });
@@ -52,7 +52,7 @@ namespace API.Controllers
         }
 
         [HttpDelete]
-        [Route("Remove")]
+        [Route("Eliminar")]
         [Authorize]
         public IActionResult RemoveMyAccount()
         {
@@ -90,7 +90,7 @@ namespace API.Controllers
         }
 
         [HttpPut]
-        [Route("Update")]
+        [Route("Actualizar")]
         [Authorize]
         public IActionResult UpdateAccount(UserRegister user)
         {
@@ -101,7 +101,7 @@ namespace API.Controllers
             string Contraseña = Token.GetClaim(HttpContext, "Contraseña").Value;
             if (Documento != user.Documento && Contraseña != user.Contraseña)
             {
-                return Unauthorized(new ResponseSender("Denied", "No puedes actualizar una cuenta que no sea la tuya"));
+                return Unauthorized(new ResponseSender(StatusMessages.DENIED, "No puedes actualizar una cuenta que no sea la tuya"));
             }
             com.Parameters.AddWithValue("@DocumentoU", user.Documento);
             com.Parameters.AddWithValue("@fotoU", user.Foto);
@@ -115,15 +115,15 @@ namespace API.Controllers
             try
             {
                 com.ExecuteNonQuery();
-                return Ok(new ResponseSender("Ok", "Cuenta actualizada correctamente"));
+                return Ok(new ResponseSender(StatusMessages.OK, "Cuenta actualizada correctamente"));
             }
             catch (SqlException ex)
             {
-                return BadRequest(new ResponseSender("Error", ex.Message));
+                return Unauthorized(new ResponseSender(StatusMessages.DENIED, ex.Message));
             }
             catch (Exception ex)
             {
-                return BadRequest(new ResponseSender("Error", ex.Message));
+                return BadRequest(new ResponseSender(StatusMessages.ERROR, ex.Message));
             }
             finally
             {
@@ -132,7 +132,7 @@ namespace API.Controllers
         }
 
         [HttpPatch]
-        [Route("ChangeRol")]
+        [Route("CambiarRol")]
         [Authorize]
         public IActionResult CambiarRolDeUsuario([FromQuery] string Documento, [FromQuery] string nuevoRol) 
         {
@@ -144,13 +144,13 @@ namespace API.Controllers
             try
             {
                 com.ExecuteNonQuery();
-                return Ok(new ResponseSender("Ok", $"Usuario seteado correctamente como {rol}"));
+                return Ok(new ResponseSender(StatusMessages.OK, $"Usuario seteado correctamente como {rol}"));
             } catch (SqlException ex)
             {
-                return Unauthorized(new ResponseSender("Denied", ex.Message));
+                return Unauthorized(new ResponseSender(StatusMessages.DENIED, ex.Message));
             } catch (Exception ex)
             {
-                return BadRequest(new ResponseSender("Error", ex.Message));
+                return BadRequest(new ResponseSender(StatusMessages.ERROR, ex.Message));
             } finally
             {
                 _conn.Close();

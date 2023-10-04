@@ -17,7 +17,7 @@ namespace API.Controllers
         private readonly static SqlConnection _conn = Connection.GetConnection();
 
         [HttpPost]
-        [Route("Add")]
+        [Route("Agregar")]
         [Authorize]
         public IActionResult AddInteraction(InteraccionRegister input)
         {
@@ -52,7 +52,7 @@ namespace API.Controllers
         }
 
         [HttpPatch]
-        [Route("Like")]
+        [Route("MeGusta")]
         [Authorize]
         public IActionResult AddJustALike([FromQuery] int NumeroR)
         {
@@ -82,7 +82,7 @@ namespace API.Controllers
 
         [HttpDelete]
         [Authorize]
-        [Route("RemoveLike")]
+        [Route("EliminarMeGusta")]
         public IActionResult RemoveALike([FromQuery] int NumeroR)
         {
             string Documento = Token.GetClaim(HttpContext, "Documento").Value;
@@ -109,7 +109,7 @@ namespace API.Controllers
         }
 
         [HttpDelete]
-        [Route("RemoveComment")]
+        [Route("EliminarComentario")]
         [Authorize]
         public IActionResult RemoveAComment([FromQuery] int NumeroR)
         {
@@ -138,7 +138,7 @@ namespace API.Controllers
         }
 
         [HttpPut]
-        [Route("UpdateComment")]
+        [Route("ActualizarComentario")]
         public IActionResult UpdateAComment([FromBody] UpdateComment data)
         {
             string Documento = Token.GetClaim(HttpContext, "Documento").Value;
@@ -165,7 +165,7 @@ namespace API.Controllers
         }
 
         [HttpPatch]
-        [Route("Comment")]
+        [Route("Comentar")]
         public IActionResult AddJustAComment([FromQuery] UpdateComment data)
         {
             string Documento = Token.GetClaim(HttpContext, "Documento").Value;

@@ -25,11 +25,8 @@ namespace API.Controllers
         {
 
             string rol = Token.GetUserRol(HttpContext);
-            if (rol != "ADMIN" && rol != "SUPERADMIN") return Unauthorized(new
-            {
-                Status = "Denegado",
-                Message = "Solo los ADMIN o SUPERADMIN tienen el permiso de agregar buses"
-            });
+            if (rol != "ADMIN" && rol != "SUPERADMIN") 
+                return Unauthorized(new ResponseSender (StatusMessages.DENIED, "Solo los ADMIN o SUPERADMIN tienen el permiso de agregar buses"));
             string q = "EXECUTE usp_agregarBus @placaB, @fotoB, @numeroR, @modeloB, @colorB,  @capacidadB, @cilindrajeB, @marcaB, @maximaVelocidad";
             SqlCommand com = new(q, _con);
             com.Parameters.AddWithValue("@placaB", bus.PlacaB);
@@ -45,20 +42,11 @@ namespace API.Controllers
             try
             {
                 com.ExecuteNonQuery();
-                return Ok(new
-                {
-                    Status = "Ok",
-                    Message = "Bus agregado correctamente",
-                    Bus = bus
-                });
+                return Ok(new ResponseSender(StatusMessages.OK, "Bus agregado correctamente"));
             }
             catch (SqlException ex)
             {
-                return BadRequest(new
-                {
-                    Status = "Error",
-                    message = ex.Message
-                });
+                return BadRequest(new ResponseSender(StatusMessages.ERROR, ex.Message));
             }
             finally
             {
@@ -73,30 +61,19 @@ namespace API.Controllers
         {
 
             string rol = Token.GetUserRol(HttpContext);
-            if (rol != "ADMIN" && rol != "SUPERADMIN") return Unauthorized(new
-            {
-                Status = "Denegado",
-                Message = "Solo los usuarios con rol de ADMIN o SUPERADMIN pueden eliminar un bus"
-            });
+            if (rol != "ADMIN" && rol != "SUPERADMIN") 
+                return Unauthorized(new ResponseSender(StatusMessages.DENIED, "Solo los usuarios con rol de ADMIN o SUPERADMIN pueden eliminar un bus"));
             string q = $"EXECUTE usp_eliminarBus '{placa}'";
             SqlCommand com = new(q, _con);
             _con.Open();
             try
             {
                 com.ExecuteNonQuery();
-                return Ok(new
-                {
-                    Status = "Ok",
-                    message = "Bus eliminado correctamente junto con las cuentas de los conductores que manejaban dicho bus"
-                });
+                return Ok(new ResponseSender(StatusMessages.OK, "Bus eliminado correctamente junto con las cuentas de los conductores que manejaban dicho bus"));
             }
             catch (SqlException ex)
             {
-                return BadRequest(new
-                {
-                    Status = "Error",
-                    message = ex.Message
-                });
+                return BadRequest(new ResponseSender(StatusMessages.ERROR, ex.Message));
             }
             finally
             {
@@ -108,7 +85,7 @@ namespace API.Controllers
         [Route("Lista")]
         public IActionResult GetBusesByRange([FromQuery] int limit, [FromQuery] int offset = 0)
         {
-            if (limit < 1) return BadRequest("El limite debe ser mayor a 0");
+            if (limit < 1) return BadRequest(new ResponseSender(StatusMessages.ERROR,"El limite debe ser mayor a 0"));
 
             string q = $"EXECUTE usp_listarBuses {limit}, {offset}";
             SqlDataAdapter da = new(q, _con);
@@ -119,11 +96,7 @@ namespace API.Controllers
             }
             catch (Exception ex)
             {
-                return BadRequest(new
-                {
-                    Status = "Error",
-                    message = ex.Message
-                });
+                return BadRequest(new ResponseSender(StatusMessages.ERROR, ex.Message));
             }
             List<Bus> buses = new();
             foreach (DataRow el in dt.Rows)
@@ -163,11 +136,7 @@ namespace API.Controllers
             }
             catch (Exception ex)
             {
-                return BadRequest(new
-                {
-                    Status = "Error",
-                    message = ex.Message
-                });
+                return BadRequest(new ResponseSender(StatusMessages.ERROR, ex.Message));
             }
 
             foreach (DataRow el in dt.Rows)
@@ -183,11 +152,7 @@ namespace API.Controllers
                     }
                 );
             }
-            return Ok(new
-            {
-                Status = "Ok",
-                Response = rutas
-            });
+            return Ok(new ResponseSender(StatusMessages.OK, rutas));
         }
 
     }
